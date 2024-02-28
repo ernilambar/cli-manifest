@@ -18,11 +18,11 @@ class ManifestCommand extends WP_CLI_Command {
 
 		$cmd_dump = WP_CLI::runcommand(
 			'cli cmd-dump',
-			[
+			array(
 				'launch' => false,
 				'return' => true,
 				'parse'  => 'json',
-			]
+			)
 		);
 
 		$subcommands = $cmd_dump['subcommands'];
@@ -30,23 +30,32 @@ class ManifestCommand extends WP_CLI_Command {
 		$commands = array();
 
 		foreach ( $subcommands as $cv ) {
-			$ck = str_replace( ' ', '/', $cv['name'] );
+			$ck = $cv['name'];
 
-			$commands[ $ck ] = [ 'title' => $cv['name'] ];
+			$commands[ $ck ] = array(
+				'title'   => $cv['name'],
+				'excerpt' => $cv['description'],
+			);
 
 			if ( isset( $cv['subcommands'] ) ) {
 				foreach ( $cv['subcommands'] as $dv ) {
-					$dk = str_replace( ' ', '/', $dv['name'] );
+					$dk = $dv['name'];
 					$dk = $ck . '/' . $dk;
 
-					$commands[ $dk ] = [ 'title' => $cv['name'] . ' ' . $dv['name'] ];
+					$commands[ $dk ] = array(
+						'title'   => $cv['name'] . ' ' . $dv['name'],
+						'excerpt' => $dv['description'],
+					);
 
 					if ( isset( $dv['subcommands'] ) ) {
 						foreach ( $dv['subcommands'] as $ev ) {
-							$ek = str_replace( ' ', '/', $ev['name'] );
+							$ek = $ev['name'];
 							$ek = $dk . '/' . $ek;
 
-							$commands[ $ek ] = [ 'title' => $cv['name'] . ' ' . $dv['name'] . ' ' . $ev['name'] ];
+							$commands[ $ek ] = array(
+								'title'   => $cv['name'] . ' ' . $dv['name'] . ' ' . $ev['name'],
+								'excerpt' => $ev['description'],
+							);
 						}
 					}
 				}
