@@ -1,0 +1,63 @@
+{
+    "name": "ernilambar/cli-manifest",
+    "description": "Generate manifest.",
+    "type": "wp-cli-package",
+    "homepage": "https://github.com/ernilambar/cli-manifest",
+    "support": {
+        "issues": "https://github.com/ernilambar/cli-manifest/issues"
+    },
+    "license": "MIT",
+    "authors": [
+      {
+        "name": "Nilambar Sharma",
+        "email": "nilambar@outlook.com",
+        "homepage": "https://www.nilambar.net",
+        "role": "Developer"
+      }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "Nilambar\\CLI_Manifest\\ManifestCommand\\": "src"
+        },
+        "files": [
+            "command.php"
+        ]
+    },
+    "require": {
+        "php": "^8",
+        "wp-cli/wp-cli": "^2.10"
+    },
+    "require-dev": {
+        "wp-cli/wp-cli-tests": "^4"
+    },
+    "config": {
+        "process-timeout": 7200,
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "johnpbloch/wordpress-core-installer": true
+        }
+    },
+    "extra": {
+        "commands": [
+            "manifest generate"
+        ]
+    },
+    "scripts": {
+        "behat": "run-behat-tests",
+        "behat-rerun": "rerun-behat-tests",
+        "lint": "run-linter-tests",
+        "phpcs": "run-phpcs-tests",
+        "phpcbf": "run-phpcbf-cleanup",
+        "phpunit": "run-php-unit-tests",
+        "prepare-tests": "install-package-tests",
+        "test": [
+            "@lint",
+            "@phpcs",
+            "@phpunit",
+            "@behat"
+        ]
+    }
+}
