@@ -3,9 +3,9 @@
 namespace Nilambar\CLI_Manifest\ManifestCommand;
 
 use WP_CLI;
-use WP_CLI\Utils;
+use WP_CLI_Command;
 
-class ManifestCommand {
+class ManifestCommand extends WP_CLI_Command {
 
 	/**
 	 * Generate manifest.
@@ -14,25 +14,51 @@ class ManifestCommand {
 	 * @subcommand generate
 	 */
 	public function generate( $args, $assoc_args ) {
-		WP_CLI::success('Manifest generated successfully.');
-	}
+		$file = 'manifest.json';
 
-	private function create_files( $files_and_contents, $force ) {
-		$wrote_files = [];
+		$cmd_dump = WP_CLI::runcommand(
+			'cli cmd-dump',
+			[
+				'launch' => false,
+				'return' => true,
+				'parse'  => 'json',
+			]
+		);
 
-		foreach ( $files_and_contents as $filename => $contents ) {
-			$should_write_file = true;
+		$subcommands = $cmd_dump['subcommands'];
 
-			if ( ! is_dir( dirname( $filename ) ) ) {
-				Process::create( Utils\esc_cmd( 'mkdir -p %s', dirname( $filename ) ) )->run();
-			}
+		$commands = array();
 
-			if ( ! file_put_contents( $filename, $contents ) ) {
-				WP_CLI::error( "Error creating file: $filename" );
-			} elseif ( $should_write_file ) {
-				$wrote_files[] = $filename;
+		foreach ( $subcommands as $cv ) {
+			$ck = str_replace( ' ', '/', $cv['name'] );
+
+			$commands[ $ck ] = [ 'title' => $cv['name'] ];
+
+			if ( isset( $cv['subcommands'] ) ) {
+				foreach ( $cv['subcommands'] as $dv ) {
+					$dk = str_replace( ' ', '/', $dv['name'] );
+					$dk = $ck . '/' . $dk;
+
+					$commands[ $dk ] = [ 'title' => $cv['name'] . ' ' . $dv['name'] ];
+
+					if ( isset( $dv['subcommands'] ) ) {
+						foreach ( $dv['subcommands'] as $ev ) {
+							$ek = str_replace( ' ', '/', $ev['name'] );
+							$ek = $dk . '/' . $ek;
+
+							$commands[ $ek ] = [ 'title' => $cv['name'] . ' ' . $dv['name'] . ' ' . $ev['name'] ];
+						}
+					}
+				}
 			}
 		}
-		return $wrote_files;
+
+		$status = file_put_contents( $file, json_encode( $commands, JSON_PRETTY_PRINT ) );
+
+		if ( false === $status ) {
+			WP_CLI::error( 'Error generating manifest.' );
+		}
+
+		WP_CLI::success( 'Manifest generated successfully.' );
 	}
 }

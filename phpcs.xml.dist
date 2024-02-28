@@ -46,7 +46,7 @@
 		<properties>
 			<property name="prefixes" type="array">
 				<element value="WP_CLI"/><!-- Namespaces. -->
-				<element value="wpcli_scaffold_package"/><!-- Global variables and such. -->
+				<element value="wpcli_manifest"/><!-- Global variables and such. -->
 			</property>
 		</properties>
 	</rule>
