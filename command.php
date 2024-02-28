@@ -13,4 +13,4 @@ if ( file_exists( $wpcli_manifest_autoload ) ) {
 	require_once $wpcli_manifest_autoload;
 }
 
-WP_CLI::add_command( 'manifest', [ ManifestCommand::class, 'generate' ] );
+WP_CLI::add_command( 'manifest', array( ManifestCommand::class, 'generate' ) );
