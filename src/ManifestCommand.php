@@ -30,13 +30,15 @@ class ManifestCommand extends WP_CLI_Command {
 		$commands = array();
 
 		foreach ( $subcommands as $cv ) {
+			// print_r( array_keys( $cv ) );
 			$ck = $cv['name'];
 
 			$ck = $this->get_clean_key( $ck );
 
 			$commands[ $ck ] = array(
-				'title'   => $cv['name'],
-				'excerpt' => $cv['description'],
+				'title'    => $cv['name'],
+				'excerpt'  => $cv['description'],
+				'synopsis' => ( isset( $cv['synopsis'] ) && 0 !== strlen( $cv['synopsis'] ) ) ? trim( 'wp ' . $cv['name'] . ' ' . $cv['synopsis'] ) : '',
 			);
 
 			if ( isset( $cv['subcommands'] ) ) {
@@ -46,9 +48,11 @@ class ManifestCommand extends WP_CLI_Command {
 
 					$dk = $this->get_clean_key( $dk );
 
+					$title = $cv['name'] . ' ' . $dv['name'];
 					$commands[ $dk ] = array(
-						'title'   => $cv['name'] . ' ' . $dv['name'],
-						'excerpt' => $dv['description'],
+						'title'    => $title,
+						'excerpt'  => $dv['description'],
+						'synopsis' => ( isset( $dv['synopsis'] ) && 0 !== strlen( $dv['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $dv['synopsis'] ) : '',
 					);
 
 					if ( isset( $dv['subcommands'] ) ) {
@@ -57,9 +61,11 @@ class ManifestCommand extends WP_CLI_Command {
 							$ek = $dk . '/' . $ek;
 							$ek = $this->get_clean_key( $ek );
 
+							$title = $cv['name'] . ' ' . $dv['name'] . ' ' . $ev['name'];
 							$commands[ $ek ] = array(
-								'title'   => $cv['name'] . ' ' . $dv['name'] . ' ' . $ev['name'],
-								'excerpt' => $ev['description'],
+								'title'    => $title,
+								'excerpt'  => $ev['description'],
+								'synopsis' => ( isset( $ev['synopsis'] ) && 0 !== strlen( $ev['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $ev['synopsis'] ) : '',
 							);
 						}
 					}
