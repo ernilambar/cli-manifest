@@ -32,6 +32,8 @@ class ManifestCommand extends WP_CLI_Command {
 		foreach ( $subcommands as $cv ) {
 			$ck = $cv['name'];
 
+			$ck = $this->get_clean_key( $ck );
+
 			$commands[ $ck ] = array(
 				'title'   => $cv['name'],
 				'excerpt' => $cv['description'],
@@ -42,6 +44,8 @@ class ManifestCommand extends WP_CLI_Command {
 					$dk = $dv['name'];
 					$dk = $ck . '/' . $dk;
 
+					$dk = $this->get_clean_key( $dk );
+
 					$commands[ $dk ] = array(
 						'title'   => $cv['name'] . ' ' . $dv['name'],
 						'excerpt' => $dv['description'],
@@ -51,6 +55,7 @@ class ManifestCommand extends WP_CLI_Command {
 						foreach ( $dv['subcommands'] as $ev ) {
 							$ek = $ev['name'];
 							$ek = $dk . '/' . $ek;
+							$ek = $this->get_clean_key( $ek );
 
 							$commands[ $ek ] = array(
 								'title'   => $cv['name'] . ' ' . $dv['name'] . ' ' . $ev['name'],
@@ -69,5 +74,9 @@ class ManifestCommand extends WP_CLI_Command {
 		}
 
 		WP_CLI::success( 'Manifest generated successfully.' );
+	}
+
+	private function get_clean_key( $title ) {
+		return str_replace( ['/', ' '], '-', $title );
 	}
 }
