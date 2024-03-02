@@ -30,15 +30,15 @@ class ManifestCommand extends WP_CLI_Command {
 		$commands = array();
 
 		foreach ( $subcommands as $cv ) {
-			// print_r( array_keys( $cv ) );
 			$ck = $cv['name'];
 
 			$ck = $this->get_clean_key( $ck );
 
 			$commands[ $ck ] = array(
-				'title'    => $cv['name'],
-				'excerpt'  => $cv['description'],
-				'synopsis' => ( isset( $cv['synopsis'] ) && 0 !== strlen( $cv['synopsis'] ) ) ? trim( 'wp ' . $cv['name'] . ' ' . $cv['synopsis'] ) : '',
+				'title'       => $cv['name'],
+				'excerpt'     => $cv['description'],
+				'description' => $cv['longdesc'],
+				'synopsis'    => ( isset( $cv['synopsis'] ) && 0 !== strlen( $cv['synopsis'] ) ) ? trim( 'wp ' . $cv['name'] . ' ' . $cv['synopsis'] ) : '',
 			);
 
 			if ( isset( $cv['subcommands'] ) ) {
@@ -50,9 +50,10 @@ class ManifestCommand extends WP_CLI_Command {
 
 					$title = $cv['name'] . ' ' . $dv['name'];
 					$commands[ $dk ] = array(
-						'title'    => $title,
-						'excerpt'  => $dv['description'],
-						'synopsis' => ( isset( $dv['synopsis'] ) && 0 !== strlen( $dv['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $dv['synopsis'] ) : '',
+						'title'       => $title,
+						'excerpt'     => $dv['description'],
+						'description' => $dv['longdesc'],
+						'synopsis'    => ( isset( $dv['synopsis'] ) && 0 !== strlen( $dv['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $dv['synopsis'] ) : '',
 					);
 
 					if ( isset( $dv['subcommands'] ) ) {
@@ -63,9 +64,10 @@ class ManifestCommand extends WP_CLI_Command {
 
 							$title = $cv['name'] . ' ' . $dv['name'] . ' ' . $ev['name'];
 							$commands[ $ek ] = array(
-								'title'    => $title,
-								'excerpt'  => $ev['description'],
-								'synopsis' => ( isset( $ev['synopsis'] ) && 0 !== strlen( $ev['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $ev['synopsis'] ) : '',
+								'title'       => $title,
+								'excerpt'     => $ev['description'],
+								'description' => $ev['longdesc'],
+								'synopsis'    => ( isset( $ev['synopsis'] ) && 0 !== strlen( $ev['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $ev['synopsis'] ) : '',
 							);
 						}
 					}
