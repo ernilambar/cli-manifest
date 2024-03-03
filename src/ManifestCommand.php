@@ -38,6 +38,9 @@ class ManifestCommand extends WP_CLI_Command {
 				'title'       => $cv['name'],
 				'excerpt'     => $cv['description'],
 				'description' => $cv['longdesc'],
+				'options'     => $this->get_options( $cv['longdesc'] ),
+				'examples'    => $this->get_example( $cv['longdesc'] ),
+				'available'   => $this->get_available( $cv['longdesc'] ),
 				'synopsis'    => ( isset( $cv['synopsis'] ) && 0 !== strlen( $cv['synopsis'] ) ) ? trim( 'wp ' . $cv['name'] . ' ' . $cv['synopsis'] ) : '',
 			);
 
@@ -53,6 +56,9 @@ class ManifestCommand extends WP_CLI_Command {
 						'title'       => $title,
 						'excerpt'     => $dv['description'],
 						'description' => $dv['longdesc'],
+						'options'     => $this->get_options( $dv['longdesc'] ),
+						'examples'    => $this->get_example( $dv['longdesc'] ),
+						'available'   => $this->get_available( $dv['longdesc'] ),
 						'synopsis'    => ( isset( $dv['synopsis'] ) && 0 !== strlen( $dv['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $dv['synopsis'] ) : '',
 					);
 
@@ -67,6 +73,9 @@ class ManifestCommand extends WP_CLI_Command {
 								'title'       => $title,
 								'excerpt'     => $ev['description'],
 								'description' => $ev['longdesc'],
+								'options'     => $this->get_options( $ev['longdesc'] ),
+								'examples'    => $this->get_example( $ev['longdesc'] ),
+								'available'   => $this->get_available( $ev['longdesc'] ),
 								'synopsis'    => ( isset( $ev['synopsis'] ) && 0 !== strlen( $ev['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $ev['synopsis'] ) : '',
 							);
 						}
@@ -86,5 +95,52 @@ class ManifestCommand extends WP_CLI_Command {
 
 	private function get_clean_key( $title ) {
 		return str_replace( ['/', ' '], '-', $title );
+	}
+
+	private function get_example( $content ) {
+		$example = '';
+
+		$exploded = explode ( '## EXAMPLES', $content );
+
+		if ( count( $exploded ) > 1 ) {
+			$example = $exploded[1];
+		}
+
+		return $example;
+	}
+
+	private function get_available( $content ) {
+		$available = '';
+
+		$exploded = explode( '## EXAMPLES', $content );
+
+		// Remove examples.
+		if ( count( $exploded ) > 1 ) {
+			$content = $exploded[0];
+		}
+
+		$exploded = explode( '## AVAILABLE FIELDS', $content );
+
+		if ( count( $exploded ) > 1 ) {
+			$available = $exploded[1];
+		}
+
+		return $available;
+	}
+
+	private function get_options( $content ) {
+		$options = '';
+
+		$exploded = explode( '## EXAMPLES', $content );
+
+		$content = reset( $exploded );
+
+		$exploded = explode( '## AVAILABLE FIELDS', $content );
+
+		$content = reset( $exploded );
+
+		$options = str_replace( '## OPTIONS', '', $content );
+
+		return $options;
 	}
 }
