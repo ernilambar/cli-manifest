@@ -34,14 +34,17 @@ class ManifestCommand extends WP_CLI_Command {
 
 			$ck = $this->get_clean_key( $ck );
 
+			$opt = $this->get_options( $cv['longdesc'] );
+
 			$commands[ $ck ] = array(
-				'title'       => $cv['name'],
-				'excerpt'     => $cv['description'],
-				'description' => $cv['longdesc'],
-				'options'     => $this->get_options( $cv['longdesc'] ),
-				'examples'    => $this->get_example( $cv['longdesc'] ),
-				'available'   => $this->get_available( $cv['longdesc'] ),
-				'synopsis'    => ( isset( $cv['synopsis'] ) && 0 !== strlen( $cv['synopsis'] ) ) ? trim( 'wp ' . $cv['name'] . ' ' . $cv['synopsis'] ) : '',
+				'title'         => $cv['name'],
+				'excerpt'       => $cv['description'],
+				'description'   => $cv['longdesc'],
+				'options'       => $opt['options'],
+				'options_extra' => $opt['extra'],
+				'examples'      => $this->get_example( $cv['longdesc'] ),
+				'available'     => $this->get_available( $cv['longdesc'] ),
+				'synopsis'      => ( isset( $cv['synopsis'] ) && 0 !== strlen( $cv['synopsis'] ) ) ? trim( 'wp ' . $cv['name'] . ' ' . $cv['synopsis'] ) : '',
 			);
 
 			if ( isset( $cv['subcommands'] ) ) {
@@ -52,14 +55,18 @@ class ManifestCommand extends WP_CLI_Command {
 					$dk = $this->get_clean_key( $dk );
 
 					$title = $cv['name'] . ' ' . $dv['name'];
+
+					$opt = $this->get_options( $dv['longdesc'] );
+
 					$commands[ $dk ] = array(
-						'title'       => $title,
-						'excerpt'     => $dv['description'],
-						'description' => $dv['longdesc'],
-						'options'     => $this->get_options( $dv['longdesc'] ),
-						'examples'    => $this->get_example( $dv['longdesc'] ),
-						'available'   => $this->get_available( $dv['longdesc'] ),
-						'synopsis'    => ( isset( $dv['synopsis'] ) && 0 !== strlen( $dv['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $dv['synopsis'] ) : '',
+						'title'         => $title,
+						'excerpt'       => $dv['description'],
+						'description'   => $dv['longdesc'],
+						'options'       => $opt['options'],
+						'options_extra' => $opt['extra'],
+						'examples'      => $this->get_example( $dv['longdesc'] ),
+						'available'     => $this->get_available( $dv['longdesc'] ),
+						'synopsis'      => ( isset( $dv['synopsis'] ) && 0 !== strlen( $dv['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $dv['synopsis'] ) : '',
 					);
 
 					if ( isset( $dv['subcommands'] ) ) {
@@ -69,14 +76,18 @@ class ManifestCommand extends WP_CLI_Command {
 							$ek = $this->get_clean_key( $ek );
 
 							$title = $cv['name'] . ' ' . $dv['name'] . ' ' . $ev['name'];
+
+							$opt = $this->get_options( $ev['longdesc'] );
+
 							$commands[ $ek ] = array(
-								'title'       => $title,
-								'excerpt'     => $ev['description'],
-								'description' => $ev['longdesc'],
-								'options'     => $this->get_options( $ev['longdesc'] ),
-								'examples'    => $this->get_example( $ev['longdesc'] ),
-								'available'   => $this->get_available( $ev['longdesc'] ),
-								'synopsis'    => ( isset( $ev['synopsis'] ) && 0 !== strlen( $ev['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $ev['synopsis'] ) : '',
+								'title'         => $title,
+								'excerpt'       => $ev['description'],
+								'description'   => $ev['longdesc'],
+								'options'       => $opt['options'],
+								'options_extra' => $opt['extra'],
+								'examples'      => $this->get_example( $ev['longdesc'] ),
+								'available'     => $this->get_available( $ev['longdesc'] ),
+								'synopsis'      => ( isset( $ev['synopsis'] ) && 0 !== strlen( $ev['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $ev['synopsis'] ) : '',
 							);
 						}
 					}
@@ -129,7 +140,10 @@ class ManifestCommand extends WP_CLI_Command {
 	}
 
 	private function get_options( $content ) {
-		$options = '';
+		$options = [
+			'options' => '',
+			'extra'   => '',
+		];
 
 		$exploded = explode( '## EXAMPLES', $content );
 
@@ -139,7 +153,15 @@ class ManifestCommand extends WP_CLI_Command {
 
 		$content = reset( $exploded );
 
-		$options = str_replace( '## OPTIONS', '', $content );
+		// Options.
+		$exploded = explode( '## OPTIONS', $content );
+
+		if ( 2 === count( $exploded ) ) {
+			$options['extra'] = $exploded[0];
+			$options['options'] = $exploded[1];
+		} else {
+			$options['options'] = str_replace( '## OPTIONS', '', $content );
+		}
 
 		return $options;
 	}
