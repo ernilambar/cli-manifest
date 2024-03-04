@@ -95,6 +95,9 @@ class ManifestCommand extends WP_CLI_Command {
 			}
 		}
 
+		$keys = array_map( 'strlen', array_keys( $commands ) );
+		array_multisort( $keys, SORT_ASC, $commands );
+
 		$status = file_put_contents( $file, json_encode( $commands, JSON_PRETTY_PRINT ) );
 
 		if ( false === $status ) {
@@ -105,13 +108,13 @@ class ManifestCommand extends WP_CLI_Command {
 	}
 
 	private function get_clean_key( $title ) {
-		return str_replace( ['/', ' '], '-', $title );
+		return str_replace( array( '/', ' ' ), '-', $title );
 	}
 
 	private function get_example( $content ) {
 		$example = '';
 
-		$exploded = explode ( '## EXAMPLES', $content );
+		$exploded = explode( '## EXAMPLES', $content );
 
 		if ( count( $exploded ) > 1 ) {
 			$example = $exploded[1];
@@ -140,10 +143,10 @@ class ManifestCommand extends WP_CLI_Command {
 	}
 
 	private function get_options( $content ) {
-		$options = [
+		$options = array(
 			'options' => '',
 			'extra'   => '',
-		];
+		);
 
 		$exploded = explode( '## EXAMPLES', $content );
 
@@ -157,7 +160,7 @@ class ManifestCommand extends WP_CLI_Command {
 		$exploded = explode( '## OPTIONS', $content );
 
 		if ( 2 === count( $exploded ) ) {
-			$options['extra'] = $exploded[0];
+			$options['extra']   = $exploded[0];
 			$options['options'] = $exploded[1];
 		} else {
 			$options['options'] = str_replace( '## OPTIONS', '', $content );
