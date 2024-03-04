@@ -7,6 +7,8 @@ use WP_CLI_Command;
 
 class ManifestCommand extends WP_CLI_Command {
 
+	private $mkd;
+
 	/**
 	 * Generate manifest.
 	 *
@@ -14,6 +16,8 @@ class ManifestCommand extends WP_CLI_Command {
 	 * @subcommand generate
 	 */
 	public function generate( $args, $assoc_args ) {
+		$this->mkd = \Parsedown::instance();
+
 		$file = 'manifest.json';
 
 		$cmd_dump = WP_CLI::runcommand(
@@ -146,7 +150,13 @@ class ManifestCommand extends WP_CLI_Command {
 			$available = $exploded[1];
 		}
 
+		$available = $this->get_html_from_md( $available );
+
 		return $available;
+	}
+
+	private function get_html_from_md( string $content ) {
+		return $this->mkd->text( $content );
 	}
 
 	private function get_options( $content ) {
@@ -167,7 +177,7 @@ class ManifestCommand extends WP_CLI_Command {
 		$exploded = explode( '## OPTIONS', $content );
 
 		if ( 2 === count( $exploded ) ) {
-			$options['extra']   = $exploded[0];
+			$options['extra']   = $this->get_html_from_md( $exploded[0] );
 			$options['options'] = $exploded[1];
 		} else {
 			$options['options'] = str_replace( '## OPTIONS', '', $content );
