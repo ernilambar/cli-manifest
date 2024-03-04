@@ -120,6 +120,13 @@ class ManifestCommand extends WP_CLI_Command {
 			$example = $exploded[1];
 		}
 
+		if ( ! empty( $example ) ) {
+			$lines = explode("\n", trim( $example ) );
+			$lines = array_map( 'trim', $lines );
+
+			$example = implode("\n", $lines );
+		}
+
 		return $example;
 	}
 
