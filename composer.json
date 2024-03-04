@@ -27,6 +27,7 @@
     },
     "require": {
         "php": "^8",
+        "erusev/parsedown": "^1.7",
         "wp-cli/wp-cli": "^2.10"
     },
     "require-dev": {
