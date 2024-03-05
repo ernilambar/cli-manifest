@@ -174,13 +174,15 @@ class ManifestCommand extends WP_CLI_Command {
 		$content = reset( $exploded );
 
 		// Options.
-		$exploded = explode( '## OPTIONS', $content );
+		if ( str_contains( $content, '## OPTIONS' ) ) {
+			$exploded = explode( '## OPTIONS', $content );
 
-		if ( 2 === count( $exploded ) ) {
-			$options['extra']   = $this->get_html_from_md( $exploded[0] );
-			$options['options'] = $exploded[1];
+			if ( 2 === count( $exploded ) ) {
+				$options['extra']   = $this->get_html_from_md( $exploded[0] );
+				$options['options'] = $exploded[1];
+			}
 		} else {
-			$options['options'] = str_replace( '## OPTIONS', '', $content );
+			$options['extra'] = $this->get_html_from_md( $content );
 		}
 
 		return $options;
