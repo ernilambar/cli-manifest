@@ -37,6 +37,8 @@ class ManifestCommand extends WP_CLI_Command {
 			$this->gen_cmd_pages( $cmd, array() );
 		}
 
+		unset( $this->commands['manifest'] );
+
 		$keys = array_map( 'strlen', array_keys( $this->commands ) );
 		array_multisort( $keys, SORT_ASC, $this->commands );
 
