@@ -63,9 +63,9 @@ class ManifestCommand extends WP_CLI_Command {
 		$this->commands[ $key ] = array(
 			'title'         => $title,
 			'excerpt'       => $cmd['description'],
-			'description'   => $cmd['longdesc'],
 			'options'       => $opt['options'],
 			'options_extra' => $opt['extra'],
+			'has_child'     => isset( $cmd['subcommands'] ) ? 1 : 0,
 			'examples'      => $this->get_example( $cmd['longdesc'] ),
 			'available'     => $this->get_available( $cmd['longdesc'] ),
 			'synopsis'      => ( isset( $cmd['synopsis'] ) && 0 !== strlen( $cmd['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $cmd['synopsis'] ) : '',
