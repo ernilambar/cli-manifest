@@ -58,7 +58,7 @@ class ManifestCommand extends WP_CLI_Command {
 
 		$key = $this->get_clean_key( $title );
 
-		$opt = $this->get_options( $cmd['longdesc'] );
+		$opt = $this->get_options( $cmd['longdesc'], $key );
 
 		$this->commands[ $key ] = array(
 			'title'         => $title,
@@ -128,7 +128,7 @@ class ManifestCommand extends WP_CLI_Command {
 		return $this->mkd->text( $content );
 	}
 
-	private function get_options( $content ) {
+	private function get_options( $content, $key = null ) {
 		$options = array(
 			'options' => '',
 			'extra'   => '',
@@ -148,7 +148,7 @@ class ManifestCommand extends WP_CLI_Command {
 
 			if ( 2 === count( $exploded ) ) {
 				$options['extra']   = $this->get_html_from_md( $exploded[0] );
-				$options['options'] = $this->get_clean_options( $exploded[1] );
+				$options['options'] = $this->get_clean_options( $exploded[1], $key );
 			}
 		} else {
 			$options['extra'] = $this->get_html_from_md( $content );
@@ -157,10 +157,8 @@ class ManifestCommand extends WP_CLI_Command {
 		return $options;
 	}
 
-	private function get_clean_options( string $content ): string {
+	private function get_clean_options( string $content, $key ): string {
 		$options = '';
-
-		// var_dump( '----' );
 
 		$splitted = preg_split( "#\n\s*\n#Uis", $content );
 
@@ -182,6 +180,10 @@ class ManifestCommand extends WP_CLI_Command {
 			$options = '<dl>';
 
 			foreach ( $fields as $field ) {
+				// Remove empty element if exists.
+				$field = array_filter( $field );
+				$field = array_values( $field );
+
 				if ( count( $field ) < 2 ) {
 					continue;
 				}
@@ -194,13 +196,12 @@ class ManifestCommand extends WP_CLI_Command {
 
 				if ( 1 === count( $new_fields ) ) {
 					$val = reset( $new_fields );
-					// print_r( $val );
 					$val = trim( ltrim( $val, ':' ) );
 				} elseif ( isset( $new_fields[1] ) && '---' !== $new_fields[1] ) {
 						$val = implode( ' ', $new_fields );
 						$val = trim( ltrim( $val, ':' ) );
 				} else {
-					// --- chha.
+					// Chha.
 					$main_value = reset( $new_fields );
 
 					// Remove first 2 elements.
@@ -209,7 +210,6 @@ class ManifestCommand extends WP_CLI_Command {
 
 					// Remove last element.
 					array_pop( $new_fields );
-					// print_r( $new_fields );
 
 					if ( str_starts_with( $new_fields[0], 'default:' ) ) {
 						$main_value .= ' [' . $new_fields[0] . ']';
