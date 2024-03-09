@@ -58,18 +58,20 @@ class ManifestCommand extends WP_CLI_Command {
 
 		$key = $this->get_clean_key( $title );
 
-		$opt = $this->get_options( $cmd['longdesc'], $key );
+		if ( in_array( $key, array( 'post-create' ), true ) || 1 === 1 ) {
+			$opt                    = $this->get_options( $cmd['longdesc'], $key );
+			$this->commands[ $key ] = array(
+				'title'         => $title,
+				'excerpt'       => $cmd['description'],
+				'options'       => $opt['options'],
+				'options_extra' => $opt['extra'],
+				'has_child'     => isset( $cmd['subcommands'] ) ? 1 : 0,
+				'examples'      => $this->get_example( $cmd['longdesc'] ),
+				'available'     => $this->get_available( $cmd['longdesc'] ),
+				'synopsis'      => ( isset( $cmd['synopsis'] ) && 0 !== strlen( $cmd['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $cmd['synopsis'] ) : '',
+			);
 
-		$this->commands[ $key ] = array(
-			'title'         => $title,
-			'excerpt'       => $cmd['description'],
-			'options'       => $opt['options'],
-			'options_extra' => $opt['extra'],
-			'has_child'     => isset( $cmd['subcommands'] ) ? 1 : 0,
-			'examples'      => $this->get_example( $cmd['longdesc'] ),
-			'available'     => $this->get_available( $cmd['longdesc'] ),
-			'synopsis'      => ( isset( $cmd['synopsis'] ) && 0 !== strlen( $cmd['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $cmd['synopsis'] ) : '',
-		);
+		}
 
 		if ( ! isset( $cmd['subcommands'] ) ) {
 			return;
@@ -168,82 +170,113 @@ class ManifestCommand extends WP_CLI_Command {
 
 		$fields = array();
 
-		foreach ( $splitted as $it ) {
-			$lines = explode( PHP_EOL, $it );
+		$i  = 0;
+		$fc = 0;
 
-			if ( count( $lines ) > 1 ) {
-				$fields[] = $lines;
+		do {
+			if (
+					str_starts_with( $splitted[ $i ], '[' )
+					|| str_starts_with( $splitted[ $i ], '<' )
+					|| str_starts_with( $splitted[ $i ], '-' )
+				) {
+					++$fc;
 			}
-		}
+
+			$fields[ $fc ][] = $splitted[ $i ];
+
+		} while ( ++$i < count( $splitted ) );
+
+		$fields = array_filter( $fields );
+
+		$options = '';
 
 		if ( ! empty( $fields ) ) {
-			$options = '<dl>';
 
+			$options .= '<dl>';
 			foreach ( $fields as $field ) {
-				// Remove empty element if exists.
-				$field = array_filter( $field );
-				$field = array_values( $field );
 
-				if ( count( $field ) < 2 ) {
+				$main_line = reset( $field );
+
+				$lines = explode( PHP_EOL, $main_line );
+
+				if ( count( $lines ) <= 1 ) {
 					continue;
 				}
 
-				$options .= '<dt>' . htmlentities( $field[0] ) . '</dt>';
+				$options .= '<dt>' . htmlentities( $lines[0] ) . '</dt>';
 
-				$new_fields = array_slice( $field, 1 );
+				$body = '';
 
-				$val = '';
-
-				if ( 1 === count( $new_fields ) ) {
-					$val = reset( $new_fields );
-					$val = trim( ltrim( $val, ':' ) );
-				} elseif ( isset( $new_fields[1] ) && '---' !== $new_fields[1] ) {
-						$val = implode( ' ', $new_fields );
-						$val = trim( ltrim( $val, ':' ) );
-				} else {
-					// Chha.
-					$main_value = reset( $new_fields );
-
-					// Remove first 2 elements.
-					array_shift( $new_fields );
-					array_shift( $new_fields );
-
-					// Remove last element.
-					array_pop( $new_fields );
-
-					if ( str_starts_with( $new_fields[0], 'default:' ) ) {
-						$main_value .= ' [' . $new_fields[0] . ']';
-						array_shift( $new_fields );
-					}
-
-					$list_values = array();
-
-					if ( isset( $new_fields[0] ) && str_starts_with( $new_fields[0], 'options:' ) ) {
-						array_shift( $new_fields );
-						$list_values = $new_fields;
-					}
-
-					$val = $main_value;
-
-					if ( ! empty( $list_values ) ) {
-						$mini_list   = '<div>Options:</div>';
-						$mini_list  .= '<ul><li>';
-						$list_values = array_map(
-							function ( $item ) {
-								return trim( str_replace( '-', '', $item ) );
-							},
-							$list_values
-						);
-						$mini_list  .= implode( '</li><li>', $list_values );
-						$mini_list  .= '</li></ul>';
-
-						$val .= $mini_list;
-					}
-
-					$val = trim( ltrim( $val, ':' ) );
+				if ( 2 === count( $lines ) ) {
+					$body = $lines[1];
+					$body = ltrim( $body, ': ' );
 				}
 
-				$options .= '<dd>' . $val . '</dd>';
+				if ( count( $lines ) > 2 ) {
+					// Remove parameter.
+					array_shift( $lines );
+
+					// Content.
+					$param_dec = array_shift( $lines );
+					$param_dec = ltrim( $param_dec, ': ' );
+					$body     .= $param_dec;
+
+					$dasher = reset( $lines );
+
+					if ( '---' === $dasher ) {
+						array_shift( $lines );
+						array_pop( $lines );
+
+						if ( str_starts_with( $lines[0], 'default:' ) ) {
+							$body .= ' [' . $lines[0] . ']';
+							// Remove default.
+							array_shift( $lines );
+
+							$list_values = array();
+
+							// Check options.
+							if ( isset( $lines[0] ) && str_starts_with( $lines[0], 'options:' ) ) {
+								// Remove options.
+								array_shift( $lines );
+								$list_values = $lines;
+							}
+
+							if ( ! empty( $list_values ) ) {
+								$mini_list   = '<div>Options:</div>';
+								$mini_list  .= '<ul><li>';
+								$list_values = array_map(
+									function ( $item ) {
+										return trim( str_replace( '-', '', $item ) );
+									},
+									$list_values
+								);
+								$mini_list  .= implode( '</li><li>', $list_values );
+								$mini_list  .= '</li></ul>';
+
+								$body .= $mini_list;
+							}
+						}
+					} else {
+						// Aru nai chha.
+						$baki_lines = $lines;
+						$baki_lines = array_map( 'trim', $baki_lines );
+
+						$body .= ' ' . implode( ' ', $baki_lines );
+					}
+				}
+
+				// Add extra stuff if exists in main field.
+				if ( count( $field ) > 1 ) {
+					$remaining_stuffs = array_slice( $field, 1 );
+					$remaining_stuffs = array_map( 'trim', $remaining_stuffs );
+					$remaining_stuffs = array_filter( $remaining_stuffs );
+
+					if ( count( $remaining_stuffs ) ) {
+						$body .= ' ' . implode( ' ', $remaining_stuffs );
+					}
+				}
+
+				$options .= '<dd>' . $body . '</dd>';
 			}
 
 			$options .= '</dl>';
