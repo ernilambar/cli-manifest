@@ -279,7 +279,7 @@ class ManifestCommand extends WP_CLI_Command {
 		}
 
 		if ( str_starts_with( $lines[0], 'default:' ) ) {
-			$content .= ' [' . $lines[0] . ']';
+			$content .= ' [' . ucfirst( $lines[0] ) . ']';
 			// Remove item default: value.
 			array_shift( $lines );
 		}
@@ -295,16 +295,18 @@ class ManifestCommand extends WP_CLI_Command {
 		}
 
 		if ( ! empty( $list_values ) ) {
-			$mini_list   = '<div>Options:</div>';
-			$mini_list  .= '<ul><li>';
+			$mini_list   = '<div><span>Options:</span>';
+			$mini_list  .= '<ul><li><code>';
 			$list_values = array_map(
 				function ( $item ) {
 					return trim( str_replace( '-', '', $item ) );
 				},
 				$list_values
 			);
-			$mini_list  .= implode( '</li><li>', $list_values );
-			$mini_list  .= '</li></ul>';
+			$mini_list  .= implode( '</code></li><li><code>', $list_values );
+			$mini_list  .= '</code></li></ul>';
+
+			$mini_list .= '</div>';
 
 			$content .= $mini_list;
 		}
