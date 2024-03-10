@@ -58,7 +58,7 @@ class ManifestCommand extends WP_CLI_Command {
 
 		$key = $this->get_clean_key( $title );
 
-		if ( in_array( $key, array( 'post-create' ), true ) || 1 === 1 ) {
+		if ( in_array( $key, array( 'export', 'post-list' ), true ) || 1 === 1 ) {
 			$opt                    = $this->get_options( $cmd['longdesc'], $key );
 			$this->commands[ $key ] = array(
 				'title'         => $title,
@@ -194,7 +194,6 @@ class ManifestCommand extends WP_CLI_Command {
 
 			$options .= '<dl>';
 			foreach ( $fields as $field ) {
-
 				$main_line = reset( $field );
 
 				$lines = explode( PHP_EOL, $main_line );
@@ -221,47 +220,25 @@ class ManifestCommand extends WP_CLI_Command {
 					$param_dec = ltrim( $param_dec, ': ' );
 					$body     .= $param_dec;
 
-					$dasher = reset( $lines );
+					$dasher_index = array_search( '---', $lines, true );
 
-					if ( '---' === $dasher ) {
-						array_shift( $lines );
-						array_pop( $lines );
+					$dashed_items = array();
 
-						if ( str_starts_with( $lines[0], 'default:' ) ) {
-							$body .= ' [' . $lines[0] . ']';
-							// Remove default.
-							array_shift( $lines );
+					if ( false !== $dasher_index ) {
+						// Dasher chha.
+						$dashed_items = array_slice( $lines, $dasher_index );
+					}
 
-							$list_values = array();
+					$maybe_baki = array_slice( $lines, 0, count( $lines ) - count( $dashed_items ) );
 
-							// Check options.
-							if ( isset( $lines[0] ) && str_starts_with( $lines[0], 'options:' ) ) {
-								// Remove options.
-								array_shift( $lines );
-								$list_values = $lines;
-							}
+					if ( 0 !== count( $maybe_baki ) ) {
+						$body .= ' ' . implode( ' ', $maybe_baki );
+					}
 
-							if ( ! empty( $list_values ) ) {
-								$mini_list   = '<div>Options:</div>';
-								$mini_list  .= '<ul><li>';
-								$list_values = array_map(
-									function ( $item ) {
-										return trim( str_replace( '-', '', $item ) );
-									},
-									$list_values
-								);
-								$mini_list  .= implode( '</li><li>', $list_values );
-								$mini_list  .= '</li></ul>';
+					if ( ! empty( $dashed_items ) ) {
+						$dashed_content = $this->get_dashed_content( $dashed_items );
 
-								$body .= $mini_list;
-							}
-						}
-					} else {
-						// Aru nai chha.
-						$baki_lines = $lines;
-						$baki_lines = array_map( 'trim', $baki_lines );
-
-						$body .= ' ' . implode( ' ', $baki_lines );
+						$body .= $dashed_content;
 					}
 				}
 
@@ -276,6 +253,8 @@ class ManifestCommand extends WP_CLI_Command {
 					}
 				}
 
+				$body = $this->get_html_from_md( $body );
+
 				$options .= '<dd>' . $body . '</dd>';
 			}
 
@@ -283,5 +262,53 @@ class ManifestCommand extends WP_CLI_Command {
 		}
 
 		return $options;
+	}
+
+	private function get_dashed_content( $lines ) {
+		$content = '';
+
+		if ( empty( $lines ) ) {
+			return $content;
+		}
+
+		array_shift( $lines );
+		array_pop( $lines );
+
+		if ( empty( $lines ) ) {
+			return $content;
+		}
+
+		if ( str_starts_with( $lines[0], 'default:' ) ) {
+			$content .= ' [' . $lines[0] . ']';
+			// Remove item default: value.
+			array_shift( $lines );
+		}
+
+		$list_values = array();
+
+		if ( count( $lines ) > 0 ) {
+			// There are options also.
+			// Remove item options:.
+			array_shift( $lines );
+
+			$list_values = $lines;
+		}
+
+		if ( ! empty( $list_values ) ) {
+			$mini_list   = '<div>Options:</div>';
+			$mini_list  .= '<ul><li>';
+			$list_values = array_map(
+				function ( $item ) {
+					return trim( str_replace( '-', '', $item ) );
+				},
+				$list_values
+			);
+			$mini_list  .= implode( '</li><li>', $list_values );
+			$mini_list  .= '</li></ul>';
+
+			$content .= $mini_list;
+		}
+
+		return $content;
 	}
 }
