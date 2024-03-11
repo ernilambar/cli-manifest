@@ -18,6 +18,9 @@ class ManifestCommand extends WP_CLI_Command {
 	 * @subcommand generate
 	 */
 	public function generate( $args, $assoc_args ) {
+		$parser = new Parser('yoyo');
+		var_dump( $parser );
+		return;
 		$this->commands = array();
 
 		$this->mkd = \Parsedown::instance();
