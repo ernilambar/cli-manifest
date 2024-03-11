@@ -58,16 +58,17 @@ class ManifestCommand extends WP_CLI_Command {
 
 		$key = $this->get_clean_key( $title );
 
-		if ( in_array( $key, array( 'export', 'post-list' ), true ) || 1 === 1 ) {
-			$opt                    = $this->get_options( $cmd['longdesc'], $key );
+		if ( in_array( $key, array( 'export', 'user-list' ), true ) || 1 === 1 ) {
+			$parser = new Parser( $cmd['longdesc'] );
+
 			$this->commands[ $key ] = array(
 				'title'         => $title,
 				'excerpt'       => $cmd['description'],
-				'options'       => $opt['options'],
-				'options_extra' => $opt['extra'],
+				'options'       => Formatter::get_formatted_options( $parser->options ),
+				'options_extra' => ! empty( $parser->memo ) ? $this->get_html_from_md( $parser->memo ) : '',
 				'has_child'     => isset( $cmd['subcommands'] ) ? 1 : 0,
-				'examples'      => $this->get_example( $cmd['longdesc'] ),
-				'available'     => $this->get_available( $cmd['longdesc'] ),
+				'examples'      => $parser->examples,
+				'available'     => ! empty( $parser->available_fields ) ? $this->get_html_from_md( $parser->available_fields ) : '',
 				'synopsis'      => ( isset( $cmd['synopsis'] ) && 0 !== strlen( $cmd['synopsis'] ) ) ? trim( 'wp ' . $title . ' ' . $cmd['synopsis'] ) : '',
 			);
 
@@ -86,77 +87,8 @@ class ManifestCommand extends WP_CLI_Command {
 		return str_replace( array( '/', ' ' ), '-', $title );
 	}
 
-	private function get_example( $content ) {
-		$example = '';
-
-		$exploded = explode( '## EXAMPLES', $content );
-
-		if ( count( $exploded ) > 1 ) {
-			$example = $exploded[1];
-		}
-
-		if ( ! empty( $example ) ) {
-			$lines = explode( "\n", trim( $example ) );
-			$lines = array_map( 'trim', $lines );
-
-			$example = implode( "\n", $lines );
-		}
-
-		return $example;
-	}
-
-	private function get_available( $content ) {
-		$available = '';
-
-		$exploded = explode( '## EXAMPLES', $content );
-
-		// Remove examples.
-		if ( count( $exploded ) > 1 ) {
-			$content = $exploded[0];
-		}
-
-		$exploded = explode( '## AVAILABLE FIELDS', $content );
-
-		if ( count( $exploded ) > 1 ) {
-			$available = $exploded[1];
-		}
-
-		$available = $this->get_html_from_md( $available );
-
-		return $available;
-	}
-
 	private function get_html_from_md( string $content ) {
 		return $this->mkd->text( $content );
-	}
-
-	private function get_options( $content, $key = null ) {
-		$options = array(
-			'options' => '',
-			'extra'   => '',
-		);
-
-		$exploded = explode( '## EXAMPLES', $content );
-
-		$content = reset( $exploded );
-
-		$exploded = explode( '## AVAILABLE FIELDS', $content );
-
-		$content = reset( $exploded );
-
-		// Options.
-		if ( str_contains( $content, '## OPTIONS' ) ) {
-			$exploded = explode( '## OPTIONS', $content );
-
-			if ( 2 === count( $exploded ) ) {
-				$options['extra']   = $this->get_html_from_md( $exploded[0] );
-				$options['options'] = $this->get_clean_options( $exploded[1], $key );
-			}
-		} else {
-			$options['extra'] = $this->get_html_from_md( $content );
-		}
-
-		return $options;
 	}
 
 	private function get_clean_options( string $content, $key ): string {
