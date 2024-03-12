@@ -58,7 +58,21 @@ class ManifestCommand extends WP_CLI_Command {
 
 		$key = $this->get_clean_key( $title );
 
-		if ( in_array( $key, array( 'export', 'user-list' ), true ) || 1 === 1 ) {
+		$env_commands = array();
+
+		if ( isset( $_ENV['COMMANDS'] ) && ! empty( $_ENV['COMMANDS'] ) ) {
+			$exp = explode( ',', $_ENV['COMMANDS'] );
+			$exp = array_map( 'trim', $exp );
+			$exp = array_filter( $exp );
+
+			if ( 0 !== $exp ) {
+				$env_commands = $exp;
+			}
+		}
+
+		$is_all = ( count( $env_commands ) ) ? false : true;
+
+		if ( ( ( count( $env_commands ) > 0 ) && ( in_array( $key, $env_commands, true ) ) ) || $is_all ) {
 			$parser = new Parser( $cmd['longdesc'] );
 
 			$this->commands[ $key ] = array(
