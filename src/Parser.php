@@ -210,6 +210,10 @@ class Parser {
 									$item = "\n\n\t" . $item . "\n";
 								}
 
+								if ( str_starts_with( trim( $item ), '| ' ) ) {
+									$item = "\n\n" . $item . "\n\n";
+								}
+
 								return $item;
 							},
 							$remaining_stuffs
