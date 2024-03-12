@@ -198,6 +198,19 @@ class Parser {
 					$remaining_stuffs = array_filter( $remaining_stuffs );
 
 					if ( count( $remaining_stuffs ) ) {
+						$remaining_stuffs = array_map(
+							function ( $item ) {
+								if ( str_starts_with( trim( $item ), '```' ) ) {
+										$item = "\n" . $item . "\n";
+								} elseif ( str_ends_with( trim( $item ), '```' ) ) {
+									$item = "\n" . $item . "\n";
+								}
+
+								return $item;
+							},
+							$remaining_stuffs
+						);
+
 						$body .= ' ' . implode( ' ', $remaining_stuffs );
 					}
 				}
