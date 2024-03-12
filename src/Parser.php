@@ -1,6 +1,6 @@
 <?php
 
-namespace Nilambar\CLI_Manifest\ManifestCommand;
+namespace Nilambar\CLI_Manifest;
 
 class Parser {
 	public $examples = '';

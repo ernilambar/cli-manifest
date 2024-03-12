@@ -1,6 +1,6 @@
 <?php
 
-namespace Nilambar\CLI_Manifest\ManifestCommand;
+namespace Nilambar\CLI_Manifest;
 
 use WP_CLI;
 
@@ -16,4 +16,4 @@ if ( file_exists( $wpcli_manifest_autoload ) ) {
 $dotenv = \Dotenv\Dotenv::createImmutable( __DIR__ );
 $dotenv->safeLoad();
 
-WP_CLI::add_command( 'manifest', array( ManifestCommand::class, 'generate' ) );
+WP_CLI::add_command( 'manifest', ManifestCommand::class );
