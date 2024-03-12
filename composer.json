@@ -19,7 +19,7 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "Nilambar\\CLI_Manifest\\ManifestCommand\\": "src"
+            "Nilambar\\CLI_Manifest\\": "src"
         },
         "files": [
             "command.php"
