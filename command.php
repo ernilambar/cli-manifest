@@ -13,4 +13,7 @@ if ( file_exists( $wpcli_manifest_autoload ) ) {
 	require_once $wpcli_manifest_autoload;
 }
 
+$dotenv = \Dotenv\Dotenv::createImmutable( __DIR__ );
+$dotenv->safeLoad();
+
 WP_CLI::add_command( 'manifest', array( ManifestCommand::class, 'generate' ) );
